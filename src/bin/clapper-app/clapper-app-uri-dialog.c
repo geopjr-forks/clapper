@@ -25,30 +25,27 @@
 #include "clapper-app-utils.h"
 
 static void
-_entry_text_changed_cb (GtkEntry *entry,
-    GParamSpec *pspec G_GNUC_UNUSED, AdwMessageDialog *dialog)
+_entry_text_changed_cb (AdwEntryRow *entry,
+    GParamSpec *pspec G_GNUC_UNUSED, AdwAlertDialog *dialog)
 {
-  GtkEntryBuffer *buffer = gtk_entry_get_buffer (entry);
-  guint text_length = gtk_entry_buffer_get_length (buffer);
+  const gchar *text = gtk_editable_get_text (GTK_EDITABLE (entry));
   gboolean enabled = FALSE;
 
-  if (text_length > 0) {
-    const gchar *text = gtk_entry_buffer_get_text (buffer);
+  if (strlen (text) > 0) {
     enabled = (text && gst_uri_is_valid (text));
   }
 
-  adw_message_dialog_set_response_enabled (dialog, "add", enabled);
+  adw_alert_dialog_set_response_enabled (dialog, "add", enabled);
 }
 
 static void
-_open_uri_cb (AdwMessageDialog *dialog, GAsyncResult *result, GtkApplication *gtk_app)
+_open_uri_cb (AdwAlertDialog *dialog, GAsyncResult *result, GtkApplication *gtk_app)
 {
-  const gchar *response = adw_message_dialog_choose_finish (dialog, result);
+  const gchar *response = adw_alert_dialog_choose_finish (dialog, result);
 
   if (strcmp (response, "add") == 0) {
-    GtkWidget *extra_child = adw_message_dialog_get_extra_child (dialog);
-    GtkEntryBuffer *buffer = gtk_entry_get_buffer (GTK_ENTRY (extra_child));
-    const gchar *text = gtk_entry_buffer_get_text (buffer);
+    AdwEntryRow *extra_child = ADW_ENTRY_ROW (gtk_list_box_get_row_at_index (GTK_LIST_BOX (adw_alert_dialog_get_extra_child (dialog)), 0));
+    const gchar *text = gtk_editable_get_text (GTK_EDITABLE (extra_child));
     GFile **files = NULL;
     gint n_files = 0;
 
@@ -62,7 +59,7 @@ _open_uri_cb (AdwMessageDialog *dialog, GAsyncResult *result, GtkApplication *gt
 static void
 _read_text_cb (GdkClipboard *clipboard, GAsyncResult *result, GtkWidget *extra_child)
 {
-  GtkEntry *entry = GTK_ENTRY (extra_child);
+  AdwEntryRow *entry = ADW_ENTRY_ROW (extra_child);
   GError *error = NULL;
   gchar *text = gdk_clipboard_read_text_finish (clipboard, result, &error);
 
@@ -89,19 +86,17 @@ clapper_app_uri_dialog_open_uri (GtkApplication *gtk_app)
 {
   GtkWindow *window = gtk_application_get_active_window (gtk_app);
   GtkBuilder *builder;
-  AdwMessageDialog *dialog;
+  AdwAlertDialog *dialog;
   GtkWidget *extra_child;
   GdkDisplay *display;
 
   builder = gtk_builder_new_from_resource (
       CLAPPER_APP_RESOURCE_PREFIX "/ui/clapper-app-uri-dialog.ui");
 
-  dialog = ADW_MESSAGE_DIALOG (gtk_builder_get_object (builder, "dialog"));
-  gtk_window_set_transient_for (GTK_WINDOW (dialog), window);
+  dialog = ADW_ALERT_DIALOG (gtk_builder_get_object (builder, "dialog"));
+  extra_child = GTK_WIDGET (gtk_builder_get_object (builder, "entry_row"));
 
-  extra_child = adw_message_dialog_get_extra_child (dialog);
-
-  g_signal_connect (GTK_ENTRY (extra_child), "notify::text",
+  g_signal_connect (GTK_EDITABLE (extra_child), "notify::text",
       G_CALLBACK (_entry_text_changed_cb), dialog);
 
   if ((display = gdk_display_get_default ())) {
@@ -112,7 +107,7 @@ clapper_app_uri_dialog_open_uri (GtkApplication *gtk_app)
   }
 
   /* NOTE: Dialog will automatically unref itself after response */
-  adw_message_dialog_choose (dialog, NULL,
+  adw_alert_dialog_choose (dialog, GTK_WIDGET (window), NULL,
       (GAsyncReadyCallback) _open_uri_cb,
       gtk_app);
 
