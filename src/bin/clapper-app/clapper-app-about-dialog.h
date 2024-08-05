@@ -24,6 +24,6 @@
 G_BEGIN_DECLS
 
 G_GNUC_INTERNAL
-GtkWidget * clapper_app_about_window_new (GtkApplication *gtk_app);
+void clapper_app_about_dialog_new (GtkApplication *gtk_app);
 
 G_END_DECLS
