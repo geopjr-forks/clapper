@@ -44,8 +44,11 @@ _open_uri_cb (AdwAlertDialog *dialog, GAsyncResult *result, GtkApplication *gtk_
   const gchar *response = adw_alert_dialog_choose_finish (dialog, result);
 
   if (strcmp (response, "add") == 0) {
-    AdwEntryRow *extra_child = ADW_ENTRY_ROW (gtk_list_box_get_row_at_index (GTK_LIST_BOX (adw_alert_dialog_get_extra_child (dialog)), 0));
-    const gchar *text = gtk_editable_get_text (GTK_EDITABLE (extra_child));
+    GtkWidget *extra_child = adw_alert_dialog_get_extra_child (dialog);
+    GtkListBoxRow *list_row = gtk_list_box_get_row_at_index (GTK_LIST_BOX (extra_child), 0);
+    AdwEntryRow *entry_row = ADW_ENTRY_ROW (list_row);
+
+    const gchar *text = gtk_editable_get_text (GTK_EDITABLE (entry_row));
     GFile **files = NULL;
     gint n_files = 0;
 
@@ -87,23 +90,23 @@ clapper_app_uri_dialog_open_uri (GtkApplication *gtk_app)
   GtkWindow *window = gtk_application_get_active_window (gtk_app);
   GtkBuilder *builder;
   AdwAlertDialog *dialog;
-  GtkWidget *extra_child;
+  GtkWidget *entry_row;
   GdkDisplay *display;
 
   builder = gtk_builder_new_from_resource (
       CLAPPER_APP_RESOURCE_PREFIX "/ui/clapper-app-uri-dialog.ui");
 
   dialog = ADW_ALERT_DIALOG (gtk_builder_get_object (builder, "dialog"));
-  extra_child = GTK_WIDGET (gtk_builder_get_object (builder, "entry_row"));
+  entry_row = GTK_WIDGET (gtk_builder_get_object (builder, "entry_row"));
 
-  g_signal_connect (GTK_EDITABLE (extra_child), "notify::text",
+  g_signal_connect (GTK_EDITABLE (entry_row), "notify::text",
       G_CALLBACK (_entry_text_changed_cb), dialog);
 
   if ((display = gdk_display_get_default ())) {
     GdkClipboard *clipboard = gdk_display_get_clipboard (display);
 
     gdk_clipboard_read_text_async (clipboard, NULL,
-        (GAsyncReadyCallback) _read_text_cb, extra_child);
+        (GAsyncReadyCallback) _read_text_cb, entry_row);
   }
 
   /* NOTE: Dialog will automatically unref itself after response */

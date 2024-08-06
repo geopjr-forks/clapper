@@ -5,12 +5,12 @@
     <property name="body" translatable="yes">Insert an URI to be added to playback queue</property>
     <property name="close-response">cancel</property>
     <property name="default-response">add</property>
-    <property name="follows-content-size">0</property>
+    <property name="follows-content-size">false</property>
     <property name="extra-child">
-      <object class="GtkListBox" id="list_box">
-        <property name="selection-mode">0</property>
+      <object class="GtkListBox">
+        <property name="selection-mode">none</property>
         <style>
-          <class name="boxed-list" />
+          <class name="boxed-list"/>
         </style>
         <child>
           <object class="AdwEntryRow" id="entry_row">
