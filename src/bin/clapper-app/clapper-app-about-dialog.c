@@ -24,18 +24,16 @@
 
 #include "clapper-app-about-dialog.h"
 
-void
-clapper_app_about_dialog_new (GtkApplication *gtk_app)
+GtkWidget *
+clapper_app_about_dialog_new ()
 {
   AdwAboutDialog *about;
-  GtkWindow *window;
   GString *string;
   gchar *gst_ver, *debug_info;
 
   about = ADW_ABOUT_DIALOG (adw_about_dialog_new_from_appdata (
       CLAPPER_APP_RESOURCE_PREFIX "/data/metainfo/" CLAPPER_APP_ID ".metainfo.xml",
       NULL));
-  window = gtk_application_get_active_window (gtk_app);
 
   /* Also show development versions */
   adw_about_dialog_set_version (about, CLAPPER_VERSION_S);
@@ -66,5 +64,5 @@ clapper_app_about_dialog_new (GtkApplication *gtk_app)
   adw_about_dialog_set_debug_info (about, debug_info);
   g_free (debug_info);
 
-  adw_dialog_present (ADW_DIALOG (about), GTK_WIDGET (window));
+  return GTK_WIDGET (about);
 }

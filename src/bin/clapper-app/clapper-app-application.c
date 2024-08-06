@@ -378,8 +378,12 @@ static void
 show_about (GSimpleAction *action, GVariant *param, gpointer user_data)
 {
   GtkApplication *gtk_app = GTK_APPLICATION (user_data);
+  GtkWindow *window;
+  GtkWidget *about_dialog;
 
-  clapper_app_about_dialog_new (gtk_app);
+  window = gtk_application_get_active_window (gtk_app);
+  about_dialog = clapper_app_about_dialog_new ();
+  adw_dialog_present (ADW_DIALOG (about_dialog), GTK_WIDGET (window));
 }
 
 GApplication *
