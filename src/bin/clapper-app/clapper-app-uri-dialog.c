@@ -45,9 +45,7 @@ _open_uri_cb (AdwAlertDialog *dialog, GAsyncResult *result, GtkApplication *gtk_
 
   if (strcmp (response, "add") == 0) {
     GtkWidget *extra_child = adw_alert_dialog_get_extra_child (dialog);
-    GtkListBoxRow *list_row = gtk_list_box_get_row_at_index (GTK_LIST_BOX (extra_child), 0);
-    AdwEntryRow *entry_row = ADW_ENTRY_ROW (list_row);
-
+    AdwEntryRow *entry_row = ADW_ENTRY_ROW (gtk_list_box_get_row_at_index (GTK_LIST_BOX (extra_child), 0));
     const gchar *text = gtk_editable_get_text (GTK_EDITABLE (entry_row));
     GFile **files = NULL;
     gint n_files = 0;
@@ -60,16 +58,15 @@ _open_uri_cb (AdwAlertDialog *dialog, GAsyncResult *result, GtkApplication *gtk_
 }
 
 static void
-_read_text_cb (GdkClipboard *clipboard, GAsyncResult *result, GtkWidget *extra_child)
+_read_text_cb (GdkClipboard *clipboard, GAsyncResult *result, GtkWidget *entry_row)
 {
-  AdwEntryRow *entry = ADW_ENTRY_ROW (extra_child);
   GError *error = NULL;
   gchar *text = gdk_clipboard_read_text_finish (clipboard, result, &error);
 
   if (G_LIKELY (error == NULL)) {
     if (gst_uri_is_valid (text)) {
-      gtk_editable_set_text (GTK_EDITABLE (entry), text);
-      gtk_editable_select_region (GTK_EDITABLE (entry), 0, -1);
+      gtk_editable_set_text (GTK_EDITABLE (entry_row), text);
+      gtk_editable_select_region (GTK_EDITABLE (entry_row), 0, -1);
     }
   } else {
     /* Common error when clipboard is empty or has unsupported content.
