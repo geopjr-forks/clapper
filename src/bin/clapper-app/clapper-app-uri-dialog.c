@@ -31,8 +31,8 @@ _entry_text_changed_cb (AdwEntryRow *entry,
   const gchar *text = gtk_editable_get_text (GTK_EDITABLE (entry));
   gboolean enabled = FALSE;
 
-  if (strlen (text) > 0) {
-    enabled = (text && gst_uri_is_valid (text));
+  if (text && *text != '\0') {
+    enabled = gst_uri_is_valid (text);
   }
 
   adw_alert_dialog_set_response_enabled (dialog, "add", enabled);
