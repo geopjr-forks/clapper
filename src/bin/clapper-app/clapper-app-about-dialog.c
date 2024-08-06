@@ -25,7 +25,7 @@
 #include "clapper-app-about-dialog.h"
 
 GtkWidget *
-clapper_app_about_dialog_new ()
+clapper_app_about_dialog_new (void)
 {
   AdwAboutDialog *about;
   GString *string;
